@@ -245,6 +245,12 @@
     </div>
 
     <div class="success-banner" id="success-banner"><i class="ti ti-circle-check"></i> Borrowing recorded!</div>
+    <div id="export-reminder" style="display:none;background:#fff8e6;border:1px solid #e0b84a;border-radius:var(--r);padding:10px 14px;font-size:13px;color:#7a5000;margin-bottom:1rem;display:none;align-items:center;gap:10px">
+      <i class="ti ti-alert-triangle" style="font-size:16px;flex-shrink:0"></i>
+      <span>You have unsaved changes — <strong>export your data</strong> to avoid losing records.</span>
+      <button onclick="exportData()" style="margin-left:auto;background:#e0b84a;border:none;border-radius:6px;padding:5px 12px;font-size:12px;font-weight:600;color:#5a3a00;cursor:pointer;font-family:inherit;white-space:nowrap">Export now</button>
+      <button onclick="dismissExportReminder()" style="background:none;border:none;cursor:pointer;color:#7a5000;font-size:16px;padding:0 2px" title="Dismiss">✕</button>
+    </div>
 
     <!-- ═══════════════ BORROW FORM ═══════════════ -->
     <div id="form-view">
@@ -759,7 +765,18 @@ function resetForm() {
 function showSuccess() {
   var b = document.getElementById("success-banner"); b.style.display = "block";
   setTimeout(function(){ b.style.display = "none"; }, 3000);
+  showExportReminder();
 }
+
+var EXPORT_KEY = "robocup_lastExportCount";
+function showExportReminder() {
+  var lastCount = parseInt(localStorage.getItem(EXPORT_KEY) || "-1", 10);
+  var currentCount = load().length;
+  var el = document.getElementById("export-reminder");
+  if (currentCount > lastCount) { el.style.display = "flex"; } else { el.style.display = "none"; }
+}
+function dismissExportReminder() { document.getElementById("export-reminder").style.display = "none"; }
+function markExported() { localStorage.setItem(EXPORT_KEY, load().length); document.getElementById("export-reminder").style.display = "none"; }
 
 // ── Records ───────────────────────────────────────────────────────────────
 function esc(s) { return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
@@ -1062,6 +1079,7 @@ function exportData() {
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
+  markExported();
 }
 
 function importData(event) {
