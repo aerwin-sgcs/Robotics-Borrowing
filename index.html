@@ -241,7 +241,7 @@
     <div class="tab-bar">
       <div class="tab active" id="tab-form" onclick="switchTab('form')"><i class="ti ti-pencil" style="font-size:14px;vertical-align:-2px;margin-right:5px"></i>Borrow items</div>
       <div class="tab" id="tab-records" onclick="switchTab('records')"><i class="ti ti-package" style="font-size:14px;vertical-align:-2px;margin-right:5px"></i>Borrowed equipment <span id="badge"></span></div>
-      <div class="tab" id="tab-avail" onclick="switchTab('avail')"><i class="ti ti-layout-grid" style="font-size:14px;vertical-align:-2px;margin-right:5px"></i>Available tiles</div>
+      <div class="tab" id="tab-avail" onclick="switchTab('avail')"><i class="ti ti-circle-check" style="font-size:14px;vertical-align:-2px;margin-right:5px"></i>Available equipment</div>
     </div>
 
     <div class="success-banner" id="success-banner"><i class="ti ti-circle-check"></i> Borrowing recorded!</div>
@@ -310,6 +310,11 @@
           <div class="item-line" id="il-case" onclick="toggleItem('case')">
             <div class="cbox"><i class="ti ti-check cbox-icon"></i></div>
             <span class="item-line-lbl"><i class="ti ti-briefcase" style="font-size:15px;vertical-align:-2px"></i> Black case</span>
+          </div>
+          <div class="tiles-sub" id="case-sub">
+            <p style="font-size:13px;color:var(--text2);margin-bottom:8px"><i class="ti ti-info-circle" style="font-size:13px;vertical-align:-1px;margin-right:4px"></i>Select which case you are borrowing.</p>
+            <div class="err" id="e-case"></div>
+            <div class="tiles-grid" id="case-grid"></div>
           </div>
         </div>
 
@@ -427,7 +432,10 @@
               <label class="edit-item-toggle"><input type="checkbox" id="edit-robot"><span><i class="ti ti-robot" style="font-size:14px;vertical-align:-2px;margin-right:5px"></i>Team robot</span></label>
               <label class="edit-item-toggle"><input type="checkbox" id="edit-kit"><span><i class="ti ti-box" style="font-size:14px;vertical-align:-2px;margin-right:5px"></i>LEGO kit</span></label>
               <label class="edit-item-toggle" id="edit-device-row"><input type="checkbox" id="edit-device"><span><i class="ti ti-device-laptop" style="font-size:14px;vertical-align:-2px;margin-right:5px"></i>Coding device</span></label>
-              <label class="edit-item-toggle"><input type="checkbox" id="edit-case"><span><i class="ti ti-briefcase" style="font-size:14px;vertical-align:-2px;margin-right:5px"></i>Black case</span></label>
+              <div class="edit-item-toggle" style="flex-direction:column;align-items:flex-start;gap:6px;cursor:default">
+                <span><i class="ti ti-briefcase" style="font-size:14px;vertical-align:-2px;margin-right:5px"></i>Black case</span>
+                <div id="edit-cases-grid" style="display:flex;flex-wrap:wrap;gap:6px;padding-left:2px"></div>
+              </div>
             </div>
 
           </div>
@@ -536,6 +544,7 @@ var TILES = [
   "15. Dead End","16. Open Rescue End Tile"
 ];
 var SETS = ["Wooden A","Wooden B","Wooden C - thinner base","Wooden D"];
+var CASES = ["Case 1","Case 2","Case 3","Case 4"];
 var TILE_IMAGES = {
   "1. Rescue End": "data:image/png;base64,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",
   "2. Straight": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAC4AAABUCAYAAAD9AAWQAAAAAXNSR0IArs4c6QAAAIRlWElmTU0AKgAAAAgABQESAAMAAAABAAEAAAEaAAUAAAABAAAASgEbAAUAAAABAAAAUgEoAAMAAAABAAIAAIdpAAQAAAABAAAAWgAAAAAAAACQAAAAAQAAAJAAAAABAAOgAQADAAAAAQABAACgAgAEAAAAAQAAAC6gAwAEAAAAAQAAAFQAAAAA88g9/wAAAAlwSFlzAAAWJQAAFiUBSVIk8AAAAX9JREFUaAXtm8ENgkAURD/gkRt3WqETaqEPeqIMKuAKuOuJE45hHDGZTYwkjn/H98fvHqSItPa08vM/rfKfzB692viRhuLaxBWUj3vIiM/zHMMwxDiOx/2vXedx+O01TdNe1/XedR1lKxnxoiiiLHnb8Spda/rH75Ybz+QZS26cYTrXkBtP30yKd7lxiutfEHfGWa1D6zjjKCmWzhlnkVTX8RxHiXuqoKTupnPG0Y54jqOkWDpPFRZJtI4zjpJi6ZxxFkm0jjOOkrqbzmcVdUdM3MRBAo4KCIomM3EaSrCQnLhPh2BnbieTR4VFQG7c53FW69R15FFhfUAbZ5FE65g4SoqlM3EWSbSOnLhPh2hr7qaTR4UFQG7cp0NW69A6niooKZbOGWeRROs44ygpls4ZZ5FU15H/5LM+oMx4nibbtr0eDPMPRhGkRtM00fd9tG2LyN9qXjcsJBqcv9GfbLeuayzLElVVRbqt5kSJvSQzjtnBVbKM45YwpY1jnKyKJ59S6+WZ8vOKAAAAAElFTkSuQmCC",
@@ -562,7 +571,7 @@ function load() { try { return JSON.parse(localStorage.getItem(KEY) || "[]"); } 
 function save(r) { localStorage.setItem(KEY, JSON.stringify(r)); }
 
 // ── Form state ────────────────────────────────────────────────────────────
-var sel = { robot:false, robotConsent:false, kit:false, kitConsent:false, device:false, case:false, tiles:false };
+var sel = { robot:false, robotConsent:false, kit:false, kitConsent:false, device:false, case:false, cases:new Set(), tiles:false };
 // selTilesBySet: { "Wooden A": Set, "Wooden B": Set, ... }
 var selTilesBySet = { "Wooden A": new Set(), "Wooden B": new Set(), "Wooden C - thinner base": new Set(), "Wooden D": new Set() };
 var activeSets = new Set(); // which sets are ticked
@@ -582,7 +591,9 @@ function toggleItem(type) {
     if (type === "robot") { sel.robotConsent = false; document.getElementById("cr-robot").classList.remove("on"); document.getElementById("cw-robot").classList.remove("show"); }
     if (type === "kit")   { sel.kitConsent   = false; document.getElementById("cr-kit").classList.remove("on");   document.getElementById("cw-kit").classList.remove("show"); }
     if (type === "tiles") { clearAllSets(); }
+    if (type === "case")  { sel.cases.clear(); document.getElementById("e-case").textContent = ""; }
   }
+  if (type === "case") { buildCaseGrid(); }
   document.getElementById("e-borrow").textContent = "";
 }
 
@@ -593,6 +604,36 @@ function clearAllSets() {
     var sp = document.getElementById("sp-" + k);
     if (sp) { sp.classList.remove("active"); document.getElementById("sb-" + k).style.display = "none"; }
   });
+}
+
+function getBorrowedCases() {
+  var out = {};
+  load().forEach(function(r) {
+    var cs = r.cases && r.cases.length ? r.cases : (r.case ? [] : []);
+    cs.forEach(function(c) { if (!out[c]) out[c] = r.name + (r.year ? " (Yr " + r.year + ")" : ""); });
+  });
+  return out;
+}
+
+function buildCaseGrid() {
+  var grid = document.getElementById("case-grid");
+  if (!sel.case) { grid.innerHTML = ""; return; }
+  var borrowed = getBorrowedCases();
+  grid.innerHTML = CASES.map(function(c) {
+    var isOut = !!borrowed[c];
+    var isOn = sel.cases.has(c);
+    var cls = "tile-chip" + (isOn ? " on" : "") + (isOut && !isOn ? " off" : "");
+    var sub = isOut ? '<span class="tile-status loan">' + esc(borrowed[c]) + '</span>' : '<span class="tile-status">Available</span>';
+    return '<div class="' + cls + '" onclick="toggleCase(\'' + c + '\')">' +
+      '<div class="t-cbox"><i class="ti ti-check t-icon"></i></div>' +
+      '<div class="tile-name-wrap"><span class="tile-name">' + esc(c) + '</span>' + sub + '</div></div>';
+  }).join("");
+}
+
+function toggleCase(caseName) {
+  if (sel.cases.has(caseName)) { sel.cases.delete(caseName); } else { sel.cases.add(caseName); }
+  buildCaseGrid();
+  document.getElementById("e-case").textContent = "";
 }
 
 function toggleSet(setName) {
@@ -725,6 +766,7 @@ function submitForm() {
   if (!name) { document.getElementById("e-name").textContent = "Please enter your name."; ok = false; }
   if (!isMissPlaced() && !getYear()) { document.getElementById("e-year").textContent = "Please select your year."; ok = false; }
   if (!sel.robot && !sel.kit && !sel.device && !sel.case && !sel.tiles) { document.getElementById("e-borrow").textContent = "Please select at least one item."; ok = false; }
+  if (sel.case && sel.cases.size === 0) { document.getElementById("e-case").textContent = "Please select which case you are borrowing."; ok = false; }
   if (sel.robot && !sel.robotConsent) { document.getElementById("cw-robot").classList.add("show"); document.getElementById("br-robot").classList.add("err"); ok = false; }
   if (sel.kit   && !sel.kitConsent)   { document.getElementById("cw-kit").classList.add("show");   document.getElementById("br-kit").classList.add("err");   ok = false; }
   var tileGroups = [];
@@ -742,7 +784,7 @@ function submitForm() {
     id: Date.now(), name: name, year: isMissPlaced() ? null : getYear(),
     robot: sel.robot, robotConsent: sel.robotConsent,
     kit: sel.kit, kitConsent: sel.kitConsent,
-    device: sel.device, case: sel.case,
+    device: sel.device, case: sel.case, cases: Array.from(sel.cases),
     tileGroups: sel.tiles ? tileGroups : [],
     date: new Date().toLocaleDateString("en-AU", {day:"2-digit",month:"short",year:"numeric"})
   });
@@ -755,7 +797,8 @@ function resetForm() {
   ["robot","kit","device","case","tiles"].forEach(function(t){ if(sel[t]) toggleItem(t); });
   sel.robotConsent = false; sel.kitConsent = false;
   clearAllSets();
-  ["e-name","e-year","e-borrow","e-set","e-tiles"].forEach(function(id){document.getElementById(id).textContent="";});
+  sel.cases.clear(); document.getElementById("case-grid").innerHTML = "";
+  ["e-name","e-year","e-borrow","e-set","e-tiles","e-case"].forEach(function(id){document.getElementById(id).textContent="";});
   document.getElementById("cw-robot").classList.remove("show");
   document.getElementById("cw-kit").classList.remove("show");
   document.getElementById("br-device").style.display = "none";
@@ -792,7 +835,8 @@ function renderRecords() {
     if (r.robot) { b.push('<span class="badge b-robot">Robot</span>'); b.push('<span class="badge b-consent">✓ Consent</span>'); }
     if (r.kit)   { b.push('<span class="badge b-kit">LEGO kit</span>'); b.push('<span class="badge b-consent">✓ Consent</span>'); }
     if (r.device) b.push('<span class="badge b-device">Coding device</span>');
-    if (r.case) b.push('<span class="badge b-case">Black case</span>');
+    if (r.cases && r.cases.length) { r.cases.forEach(function(c){ b.push('<span class="badge b-case">' + esc(c) + '</span>'); }); }
+    else if (r.case) b.push('<span class="badge b-case">Black case</span>');
     // Support both new tileGroups and legacy tileSet/tiles
     var groups = r.tileGroups && r.tileGroups.length ? r.tileGroups : (r.tileSet ? [{set:r.tileSet, tiles:r.tiles||[]}] : []);
     groups.forEach(function(g) {
@@ -858,10 +902,28 @@ function renderAvailable() {
       });
     });
   });
+  // Cases section
+  var borrowedCases = {};
+  records.forEach(function(r) {
+    var cs = r.cases && r.cases.length ? r.cases : [];
+    cs.forEach(function(c) { if (!borrowedCases[c]) borrowedCases[c] = r.name + (r.year ? " (Yr " + r.year + ")" : ""); });
+  });
+  var casesAvail = CASES.filter(function(c){ return !borrowedCases[c]; }).length;
+  var html = '<div class="avail-section">';
+  html += '<div class="avail-section-hdr"><span class="avail-section-title">Black cases</span><span class="avail-counts"><span class="g">' + casesAvail + ' available</span> &middot; <span class="r">' + (CASES.length - casesAvail) + ' out</span></span></div>';
+  html += '<div class="avail-grid">';
+  CASES.forEach(function(c) {
+    var borrower = borrowedCases[c];
+    var cls = "avail-chip" + (borrower ? " out" : "");
+    var sub = borrower ? '<div class="avail-borrower">' + esc(borrower) + '</div>' : "";
+    html += '<div class="' + cls + '"><div class="avail-dot"></div><i class="ti ti-briefcase" style="font-size:20px;color:var(--text2);flex-shrink:0"></i><div><div class="avail-name">' + esc(c) + '</div>' + sub + '</div></div>';
+  });
+  html += '</div></div>';
+
   var total = TILES.length * SETS.length;
   var outN = SETS.reduce(function(n,s){ return n + Object.keys(map[s]).length; }, 0);
-  var html = '<div class="avail-stats">' +
-    '<div class="stat"><div class="stat-num">' + total + '</div><div class="stat-lbl">Total slots</div></div>' +
+  html += '<div class="avail-stats">' +
+    '<div class="stat"><div class="stat-num">' + total + '</div><div class="stat-lbl">Total tile slots</div></div>' +
     '<div class="stat" style="background:#eaf3de;border-color:#c0dd97"><div class="stat-num" style="color:#3b6d11">' + (total-outN) + '</div><div class="stat-lbl" style="color:#3b6d11">Available</div></div>' +
     '<div class="stat" style="background:#fcebeb;border-color:#f09595"><div class="stat-num" style="color:#a32d2d">' + outN + '</div><div class="stat-lbl" style="color:#a32d2d">Out / Missing</div></div>' +
     '</div>';
@@ -898,7 +960,11 @@ function openEdit(id) {
   document.getElementById("edit-robot").checked = !!r.robot;
   document.getElementById("edit-kit").checked = !!r.kit;
   document.getElementById("edit-device").checked = !!r.device;
-  document.getElementById("edit-case").checked = !!r.case;
+  var activeCases = r.cases && r.cases.length ? r.cases : [];
+  document.getElementById("edit-cases-grid").innerHTML = CASES.map(function(c) {
+    var checked = activeCases.indexOf(c) !== -1 ? "checked" : "";
+    return '<label class="edit-tile-lbl"><input type="checkbox" value="' + esc(c) + '" ' + checked + '><span>' + esc(c) + '</span></label>';
+  }).join("");
   document.getElementById("edit-device-row").style.display = (r.year === "5" || r.name === "Miss Placed") ? "flex" : "none";
   // Build tileGroups from record (support both legacy and new format)
   var editGroups = r.tileGroups && r.tileGroups.length ? r.tileGroups
@@ -1023,7 +1089,8 @@ function saveEdit() {
     robot: document.getElementById("edit-robot").checked,
     kit: document.getElementById("edit-kit").checked,
     device: document.getElementById("edit-device").checked,
-    case: document.getElementById("edit-case").checked,
+    cases: Array.from(document.querySelectorAll('#edit-cases-grid input[type="checkbox"]:checked')).map(function(el){return el.value;}),
+    case: document.querySelectorAll('#edit-cases-grid input[type="checkbox"]:checked').length > 0,
     tileSet: tileSet, tiles: tiles
   });
   save(records); hideModal("edit-modal"); updateBadge(); renderRecords(); renderStats();
