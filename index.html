@@ -492,11 +492,14 @@
     <!-- Import confirmation modal -->
     <div class="modal-overlay" id="import-modal">
       <div class="modal-box">
-        <div class="modal-icon"><i class="ti ti-file-import"></i></div>
-        <div class="modal-title">Import data?</div>
-        <div class="modal-body" id="import-modal-body">This will replace all current records with the imported file. This cannot be undone.</div>
+        <div class="modal-icon"><i class="ti ti-alert-triangle" style="color:#c07800"></i></div>
+        <div class="modal-title">Replace all records?</div>
+        <div class="modal-body" id="import-modal-body"></div>
+        <div style="background:#fff8e6;border:1px solid #e0b84a;border-radius:8px;padding:10px 14px;font-size:13px;color:#7a5000;margin-bottom:1.25rem;text-align:left">
+          <strong>Warning:</strong> This will permanently delete all current records and replace them with the imported file. This cannot be undone.
+        </div>
         <div class="modal-btns">
-          <button class="primary" onclick="confirmImport()">Yes, import</button>
+          <button class="primary" style="background:#a32d2d" onclick="confirmImport()">Yes, replace all records</button>
           <button class="secondary" onclick="hideModal('import-modal')">Cancel</button>
         </div>
       </div>
@@ -1072,9 +1075,9 @@ function importData(event) {
       var records = Array.isArray(data) ? data : (data.records && Array.isArray(data.records) ? data.records : null);
       if (!records) { alert("Invalid file — could not find records."); return; }
       pendingImportData = records;
-      var body = "This will replace all current records with " + records.length + " imported record(s)";
+      var body = "The file contains " + records.length + " record(s)";
       if (data.exportedAt) body += ", exported on " + new Date(data.exportedAt).toLocaleDateString("en-AU", {day:"2-digit",month:"short",year:"numeric"});
-      body += ". This cannot be undone.";
+      body += ".";
       document.getElementById("import-modal-body").textContent = body;
       showModal("import-modal");
     } catch(err) {
